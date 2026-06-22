@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div class="reg-wrap">
+  <div class="reg-card">
+    <h2>Create Account</h2>
+    <p>Join RailYatra and start booking train tickets today</p>
+
+    <form method="POST" action="{{ url_for('register') }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" name="first_name" placeholder="Rahul" required>
+        </div>
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" name="last_name" placeholder="Sharma" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" name="email" placeholder="rahul@email.com" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" name="phone" placeholder="9876543210" required>
+        </div>
+        <div class="form-group">
+          <label>Date of Birth</label>
+          <input type="date" name="dob" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Gender</label>
+          <select name="gender" required>
+            <option value="">Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>ID Proof Type</label>
+          <select name="id_proof_type" required>
+            <option value="Aadhar">Aadhar Card</option>
+            <option value="Passport">Passport</option>
+            <option value="Driving Licence">Driving Licence</option>
+            <option value="Voter ID">Voter ID</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>ID Proof Number</label>
+        <input type="text" name="id_proof_number" placeholder="Enter your ID number" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" name="password" placeholder="Min 8 characters" minlength="8" required>
+        </div>
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <input type="password" name="confirm_password" placeholder="Repeat password" required>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-gold btn-full" style="margin-top:10px;">Create Account</button>
+    </form>
+
+    <div class="auth-switch" style="margin-top:20px;">
+      Already have an account? <a href="{{ url_for('login') }}">Sign in</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

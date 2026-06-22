@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block title %}Search Trains{% endblock %}
+
+{% block content %}
+<!-- ── HERO ── -->
+<div class="page-hero" style="text-align:center;">
+  <span class="section-tag">Find Your Train</span>
+  <h1 class="section-title">Search Trains</h1>
+  <p style="color:var(--gray);max-width:500px;margin:0 auto 36px;">
+    Find trains between any two stations across India
+  </p>
+
+  <!-- Search Form -->
+  <form method="POST" action="{{ url_for('search') }}">
+    <div class="search-box">
+      <div class="search-grid">
+        <div class="form-group" style="margin:0;text-align:left;">
+          <label>From Station</label>
+          <select name="from_station" required>
+            {% for s in stations %}
+            <option value="{{ s.station_code }}"
+              {% if from_st and from_st.station_code == s.station_code %}selected{% endif %}>
+              {{ s.station_name }} ({{ s.station_code }})
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group" style="margin:0;text-align:left;">
+          <label>To Station</label>
+          <select name="to_station" required>
+            {% for s in stations %}
+            <option value="{{ s.station_code }}"
+              {% if to_st and to_st.station_code == s.station_code %}selected{% endif %}>
+              {{ s.station_name }} ({{ s.station_code }})
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group" style="margin:0;text-align:left;">
+          <label>Journey Date</label>
+          <input type="date" name="journey_date"
+                 value="{{ date if date else '' }}" required>
+        </div>
+        <button type="submit" class="btn btn-gold" style="height:50px;align-self:end;">Search</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- ── RESULTS ── -->
+{% if results is not none %}
+<div class="section-wrap" style="padding-top:48px;">
+  {% if results %}
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">
+      <div>
+        <span class="section-tag">Available Trains</span>
+        <h2 style="font-family:var(--font-d);font-size:1.5rem;">
+          {{ from_st.station_name }} → {{ to_st.station_name }}
+        </h2>
+      </div>
+      <span style="font-family:var(--font-m);font-size:0.8rem;color:var(--gold);">
+        {{ results|length }} TRAIN{% if results|length != 1 %}S{% endif %} FOUND
+      </span>
+    </div>
+
+    {% for t in results %}
+    <div class="train-result">
+      <!-- Train Info -->
+      <div>
+        <div class="tr-number">{{ t.train_number }}</div>
+        <div class="tr-name">{{ t.train_name }}</div>
+        <span class="badge badge-{{ t.train_type|lower }}">{{ t.train_type }}</span>
+        <div style="margin-top:8px;font-size:0.8rem;color:var(--gray);">{{ t.distance_km }} km</div>
+      </div>
+
+      <!-- Journey Strip -->
+      <div class="journey-strip">
+        <div class="j-time">
+          <div class="t">{{ t.departure_time.seconds // 3600 if t.departure_time else '--' }}:{{ '%02d' % ((t.departure_time.seconds % 3600) // 60) if t.departure_time else '--' }}</div>
+          <div class="s">{{ from_st.station_code }}</div>
+        </div>
+        <div class="j-line" style="position:relative;">
+          <div class="j-dur">{{ t.train_type }}</div>
+        </div>
+        <div class="j-time">
+          <div class="t">{{ t.arrival_time.seconds // 3600 if t.arrival_time else '--' }}:{{ '%02d' % ((t.arrival_time.seconds % 3600) // 60) if t.arrival_time else '--' }}</div>
+          <div class="s">{{ to_st.station_code }}</div>
+        </div>
+      </div>
+
+      <!-- Book Button -->
+      <div style="text-align:right;">
+        <div style="font-family:var(--font-m);font-size:0.7rem;color:var(--gold);margin-bottom:8px;">FROM</div>
+        <div style="font-family:var(--font-d);font-size:1.5rem;color:var(--gold);margin-bottom:12px;">₹ 450</div>
+        <a href="{{ url_for('book', train_id=t.train_id) }}" class="btn btn-gold btn-sm">Book Now</a>
+      </div>
+    </div>
+    {% endfor %}
+
+  {% elif request.method == 'POST' %}
+    <div class="card" style="text-align:center;padding:60px;">
+      <div style="font-size:3rem;margin-bottom:16px;">🔍</div>
+      <h3 style="font-family:var(--font-d);margin-bottom:12px;">No Trains Found</h3>
+      <p style="color:var(--gray);">No trains found for this route. Try a different combination.</p>
+    </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

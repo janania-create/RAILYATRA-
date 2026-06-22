@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}PNR Status{% endblock %}
+
+{% block content %}
+<!-- ── HERO ── -->
+<div class="pnr-hero">
+  <span class="section-tag">Track Your Booking</span>
+  <h1 class="section-title">PNR Status</h1>
+  <p style="color:var(--gray);max-width:480px;margin:14px auto 0;">
+    Enter your PNR number to check the current status of your booking
+  </p>
+  <div class="pnr-search">
+    <input type="text" id="pnrField"
+           placeholder="Enter PNR e.g. PNR1000001"
+           value="{{ pnr if pnr else '' }}"
+           onkeydown="if(event.key==='Enter') searchPNR()">
+    <button onclick="searchPNR()">Check Status</button>
+  </div>
+  <div style="margin-top:16px;color:var(--gray);font-size:0.83rem;">
+    Try:
+    <a href="{{ url_for('pnr_status', pnr='PNR1000001') }}" style="color:var(--gold);">PNR1000001</a> &nbsp;|&nbsp;
+    <a href="{{ url_for('pnr_status', pnr='PNR1000002') }}" style="color:var(--gold);">PNR1000002</a>
+  </div>
+</div>
+
+<!-- ── RESULT ── -->
+{% if booking %}
+<div class="ticket-card">
+  <div class="ticket">
+
+    <!-- Header -->
+    <div class="ticket-head">
+      <div>
+        <div class="pnr-label">PNR NUMBER</div>
+        <div class="pnr-num">{{ booking.pnr_number }}</div>
+      </div>
+      {% set sc = 's-confirmed' if booking.booking_status=='Confirmed' else ('s-waiting' if booking.booking_status=='Waiting' else 's-cancelled') %}
+      <div class="status-badge {{ sc }}">{{ booking.booking_status.upper() }}</div>
+    </div>
+
+    <!-- Body -->
+    <div class="ticket-body">
+      <div class="tk-station">
+        <div class="code">{{ booking.from_code }}</div>
+        <div class="name">{{ booking.from_name }}</div>
+      </div>
+      <div class="tk-arrow">
+        <div class="arrow">→</div>
+        <div class="dur">{{ booking.train_name }}</div>
+      </div>
+      <div class="tk-station tk-right">
+        <div class="code">{{ booking.to_code }}</div>
+        <div class="name">{{ booking.to_name }}</div>
+      </div>
+    </div>
+
+    <!-- Perforated Divider -->
+    <div class="perf"></div>
+
+    <!-- Details -->
+    <div class="ticket-details">
+      <div class="det-grid">
+        <div class="det-item">
+          <div class="dl">Train</div>
+          <div class="dv">{{ booking.train_number }}</div>
+        </div>
+        <div class="det-item">
+          <div class="dl">Journey Date</div>
+          <div class="dv">{{ booking.journey_date.strftime('%d %b %Y') if booking.journey_date else '—' }}</div>
+        </div>
+        <div class="det-item">
+          <div class="dl">Coach</div>
+          <div class="dv">{{ booking.coach_number }} ({{ booking.coach_type }})</div>
+        </div>
+        <div class="det-item">
+          <div class="dl">Seat</div>
+          <div class="dv">{{ booking.seat_number or 'WL' }}</div>
+        </div>
+        <div class="det-item">
+          <div class="dl">Passenger</div>
+          <div class="dv">{{ booking.first_name }} {{ booking.last_name }}</div>
+        </div>
+        <div class="det-item">
+          <div class="dl">Phone</div>
+          <div class="dv">{{ booking.phone }}</div>
+        </div>
+        <div class="det-item">
+          <div class="dl">Amount Paid</div>
+          <div class="dv" style="color:var(--gold);">₹ {{ booking.amount }}</div>
+        </div>
+        <div class="det-item">
+          <div class="dl">Payment</div>
+          <div class="dv">{{ booking.payment_method }} — {{ booking.payment_status }}</div>
+        </div>
+      </div>
+
+      {% if booking.booking_status == 'Confirmed' %}
+      <div style="margin-top:28px;display:flex;gap:12px;">
+        <button onclick="window.print()" class="btn btn-outline btn-sm">🖨️ Print Ticket</button>
+        <a href="{{ url_for('cancel', pnr=booking.pnr_number) }}"
+           class="btn btn-danger btn-sm"
+           onclick="return confirm('Cancel this booking?')">❌ Cancel Booking</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% elif pnr %}
+<div class="section-wrap" style="padding-top:48px;text-align:center;">
+  <div class="card" style="max-width:480px;margin:0 auto;padding:60px;">
+    <div style="font-size:3rem;margin-bottom:16px;">❌</div>
+    <h3 style="font-family:var(--font-d);margin-bottom:12px;">PNR Not Found</h3>
+    <p style="color:var(--gray);">No booking found for <strong style="color:var(--gold);">{{ pnr }}</strong>. Please check the PNR number and try again.</p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% block title %}Book Ticket{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <span class="section-tag">Step by Step</span>
+  <h1 class="section-title">Book Your Ticket</h1>
+  <p style="color:var(--gray);">{{ train.train_number }} — {{ train.train_name }}</p>
+</div>
+
+<div class="book-wrap">
+  <!-- Progress Bar -->
+  <div class="progress-steps">
+    <div class="p-step active" id="pStep1"><div class="p-circle">1</div><div class="p-label">Select Coach</div></div>
+    <div class="p-step"        id="pStep2"><div class="p-circle">2</div><div class="p-label">Choose Seat</div></div>
+    <div class="p-step"        id="pStep3"><div class="p-circle">3</div><div class="p-label">Passenger Info</div></div>
+    <div class="p-step"        id="pStep4"><div class="p-circle">4</div><div class="p-label">Payment</div></div>
+  </div>
+
+  <form method="POST" action="{{ url_for('book', train_id=train.train_id) }}" id="bookForm">
+    <!-- Hidden inputs (filled by JS) -->
+    <input type="hidden" name="coach_id"       id="coachInput"  value="{{ coaches[0].coach_id if coaches }}">
+    <input type="hidden" name="seat_number"    id="seatInput"   value="">
+    <input type="hidden" name="fare_amount"    id="fareInput"   value="450">
+    <input type="hidden" name="payment_method" id="payMethodInput" value="UPI">
+    <input type="hidden" name="total_amount"   id="totalInput"  value="">
+
+    <!-- ── STEP 1: COACH ── -->
+    <div id="bStep1">
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-title">🚆 Journey Details</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>From Station</label>
+            <select name="from_station" required>
+              {% for s in stations %}
+              <option value="{{ s.station_id }}">{{ s.station_name }} ({{ s.station_code }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>To Station</label>
+            <select name="to_station" required>
+              {% for s in stations %}
+              <option value="{{ s.station_id }}">{{ s.station_name }} ({{ s.station_code }})</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Journey Date</label>
+            <input type="date" name="journey_date" required>
+          </div>
+          <div class="form-group">
+            <label>Passengers</label>
+            <select name="passengers">
+              <option>1</option><option>2</option><option>3</option><option>4</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💺 Select Coach Class</div>
+        <div class="coach-grid">
+          {% for c in coaches %}
+          {% set fare = fares | selectattr('coach_type','equalto',c.coach_type) | list %}
+          {% set price = fare[0].base_fare + (fare[0].fare_per_km * 1200) if fare else 500 %}
+          <div class="coach-opt {% if loop.first %}selected{% endif %}"
+               data-coach-id="{{ c.coach_id }}"
+               data-fare="{{ price|int }}"
+               onclick="pickCoach(this)">
+            <div class="co-type">{{ c.coach_type }}</div>
+            <div class="co-price">₹ {{ price|int }}</div>
+            <div class="co-avail">✓ {{ c.total_seats }} seats</div>
+          </div>
+          {% else %}
+          <div class="coach-opt selected" data-coach-id="1" data-fare="450" onclick="pickCoach(this)">
+            <div class="co-type">Sleeper (SL)</div>
+            <div class="co-price">₹ 450</div>
+            <div class="co-avail">✓ 42 Available</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="step-btns">
+        <button type="button" class="btn btn-gold" onclick="nextStep()">Continue to Seat Selection →</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 2: SEAT ── -->
+    <div id="bStep2" style="display:none;">
+      <div class="card">
+        <div class="card-title">🗺️ Choose Your Seat — Coach S1</div>
+        <div class="seat-grid" id="seatMap"></div>
+        <div class="seat-legend" style="margin-top:18px;">
+          <div class="leg-item"><div class="leg-dot" style="border-color:var(--dark3);background:var(--dark2);"></div> Available</div>
+          <div class="leg-item"><div class="leg-dot" style="border-color:var(--dark3);background:var(--dark3);"></div> Booked</div>
+          <div class="leg-item"><div class="leg-dot" style="border-color:var(--gold);background:var(--gold);"></div> Selected</div>
+        </div>
+      </div>
+      <div class="step-btns">
+        <button type="button" class="btn btn-dark" onclick="prevStep()">← Back</button>
+        <button type="button" class="btn btn-gold" onclick="nextStep()">Continue to Passenger Info →</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 3: PASSENGER ── -->
+    <div id="bStep3" style="display:none;">
+      <div class="card">
+        <div class="card-title">👤 Passenger Details</div>
+        <div class="form-row">
+          <div class="form-group"><label>First Name</label><input type="text" name="p_first_name" placeholder="Rahul" required></div>
+          <div class="form-group"><label>Last Name</label><input type="text" name="p_last_name" placeholder="Sharma" required></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Age</label><input type="number" name="p_age" placeholder="28" min="1" max="120" required></div>
+          <div class="form-group">
+            <label>Gender</label>
+            <select name="p_gender" required>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>ID Proof</label>
+            <select name="p_id_type">
+              <option>Aadhar</option><option>Passport</option><option>Driving Licence</option>
+            </select>
+          </div>
+          <div class="form-group"><label>ID Number</label><input type="text" name="p_id_number" placeholder="1234-5678-9012" required></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Email</label><input type="email" name="p_email" placeholder="rahul@email.com"></div>
+          <div class="form-group"><label>Phone</label><input type="tel" name="p_phone" placeholder="9876543210"></div>
+        </div>
+      </div>
+      <div class="step-btns">
+        <button type="button" class="btn btn-dark" onclick="prevStep()">← Back</button>
+        <button type="button" class="btn btn-gold" onclick="nextStep()">Continue to Payment →</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 4: PAYMENT ── -->
+    <div id="bStep4" style="display:none;">
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-title">🧾 Booking Summary</div>
+        <table class="summary-tbl">
+          <tr><td>Train</td><td>{{ train.train_number }} — {{ train.train_name }}</td></tr>
+          <tr><td>Type</td><td><span class="badge badge-{{ train.train_type|lower }}">{{ train.train_type }}</span></td></tr>
+          <tr><td>Class</td><td id="summaryClass">—</td></tr>
+          <tr><td>Seat</td><td id="summarySeat">Not selected</td></tr>
+          <tr><td>Base Fare</td><td id="summaryFare">—</td></tr>
+          <tr><td>Reservation Charge</td><td>₹ 40</td></tr>
+          <tr><td>GST (5%)</td><td id="summaryGST">—</td></tr>
+          <tr class="total-row"><td>Total Amount</td><td id="summaryTotal">—</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💳 Payment Method</div>
+        <div class="pay-methods">
+          <div class="pay-opt selected" data-method="UPI"         onclick="pickPayment(this)"><span class="pi">📱</span><span class="pl">UPI / GPay</span></div>
+          <div class="pay-opt"          data-method="Credit Card"  onclick="pickPayment(this)"><span class="pi">💳</span><span class="pl">Credit Card</span></div>
+          <div class="pay-opt"          data-method="Net Banking"  onclick="pickPayment(this)"><span class="pi">🏦</span><span class="pl">Net Banking</span></div>
+          <div class="pay-opt"          data-method="Debit Card"   onclick="pickPayment(this)"><span class="pi">💰</span><span class="pl">Debit Card</span></div>
+        </div>
+        <div class="form-group">
+          <label>UPI ID / Card Number</label>
+          <input type="text" placeholder="yourname@upi or card number" name="payment_detail">
+        </div>
+      </div>
+
+      <div class="step-btns">
+        <button type="button" class="btn btn-dark" onclick="prevStep()">← Back</button>
+        <button type="submit" class="btn btn-gold" style="flex:1;">🔒 Confirm &amp; Pay</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+{% block scripts %}
+<script>
+// Update seat label in summary
+document.getElementById('seatMap') && document.getElementById('seatMap').addEventListener('click', () => {
+  const el = document.getElementById('summarySeat');
+  if (el && document.getElementById('seatInput').value) el.textContent = document.getElementById('seatInput').value;
+});
+</script>
+{% endblock %}
+{% endblock %}

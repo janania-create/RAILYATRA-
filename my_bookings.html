@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}My Bookings{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <span class="section-tag">Your Account</span>
+  <h1 class="section-title">My Bookings</h1>
+  <p style="color:var(--gray);">All your train tickets in one place</p>
+</div>
+
+<div class="section-wrap">
+  {% if bookings %}
+  <div class="my-bookings-grid">
+    {% for b in bookings %}
+    <div class="booking-row">
+      <div>
+        <div class="br-pnr">{{ b.pnr_number }}</div>
+        <div style="font-size:0.75rem;color:var(--gray);margin-top:4px;">
+          {{ b.booking_date.strftime('%d %b %Y') if b.booking_date else '' }}
+        </div>
+      </div>
+      <div>
+        <div class="br-train">{{ b.train_number }} — {{ b.train_name }}</div>
+        <div class="br-route">{{ b.from_name }} → {{ b.to_name }}</div>
+        <div style="font-size:0.82rem;color:var(--gray);margin-top:4px;">
+          {{ b.coach_number }} ({{ b.coach_type }}) &nbsp;·&nbsp;
+          Seat: {{ b.seat_number or 'WL' }} &nbsp;·&nbsp;
+          {{ b.journey_date.strftime('%d %b %Y') if b.journey_date else '' }}
+        </div>
+      </div>
+      <div style="text-align:center;">
+        {% set sc = 'badge-confirmed' if b.booking_status=='Confirmed' else ('badge-waiting' if b.booking_status=='Waiting' else 'badge-cancelled') %}
+        <span class="badge {{ sc }}">{{ b.booking_status }}</span>
+        <div style="font-family:var(--font-d);font-size:1.1rem;color:var(--gold);margin-top:8px;">
+          ₹ {{ b.amount }}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <a href="{{ url_for('pnr_status', pnr=b.pnr_number) }}" class="btn btn-dark btn-sm">View</a>
+        {% if b.booking_status == 'Confirmed' %}
+        <button onclick="confirmCancel('{{ b.pnr_number }}')" class="btn btn-danger btn-sm">Cancel</button>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div style="text-align:center;padding:80px 20px;">
+    <div style="font-size:4rem;margin-bottom:20px;">🎫</div>
+    <h2 style="font-family:var(--font-d);margin-bottom:12px;">No Bookings Yet</h2>
+    <p style="color:var(--gray);margin-bottom:28px;">You haven't booked any tickets yet. Start your journey today!</p>
+    <a href="{{ url_for('search') }}" class="btn btn-gold">Search Trains</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

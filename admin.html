@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="admin-wrap">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sb-section-lbl">Main</div>
+    <a href="#dashboard" class="sb-item active" onclick="setActive(this)"><span class="sb-icon">📊</span> Dashboard</a>
+    <a href="#trains"    class="sb-item"        onclick="setActive(this)"><span class="sb-icon">🚆</span> Trains</a>
+    <a href="#bookings"  class="sb-item"        onclick="setActive(this)"><span class="sb-icon">🎫</span> Bookings</a>
+
+    <div class="sb-section-lbl">People</div>
+    <a href="#employees" class="sb-item"        onclick="setActive(this)"><span class="sb-icon">👷</span> Employees</a>
+    <a href="#passengers" class="sb-item"       onclick="setActive(this)"><span class="sb-icon">👥</span> Passengers</a>
+
+    <div class="sb-section-lbl">Finance</div>
+    <a href="#revenue" class="sb-item"          onclick="setActive(this)"><span class="sb-icon">💰</span> Revenue</a>
+
+    <div class="sb-section-lbl">Site</div>
+    <a href="{{ url_for('home') }}" class="sb-item"><span class="sb-icon">🏠</span> Back to Site</a>
+  </aside>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="admin-main">
+    <div class="admin-top">
+      <div>
+        <h1>Dashboard</h1>
+        <div class="admin-date" id="adminDate"></div>
+      </div>
+      <a href="{{ url_for('search') }}" class="btn btn-outline btn-sm">View Live Site</a>
+    </div>
+
+    <!-- ── KPI CARDS ── -->
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-lbl">Total Bookings</div>
+        <div class="kpi-val">{{ stats.total_bookings }}</div>
+        <div class="kpi-sub">↑ All time</div>
+        <div class="kpi-ico">🎫</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Total Revenue</div>
+        <div class="kpi-val">₹{{ '{:,.0f}'.format(stats.total_revenue) }}</div>
+        <div class="kpi-sub">↑ Successful payments</div>
+        <div class="kpi-ico">💰</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Active Trains</div>
+        <div class="kpi-val">{{ stats.active_trains }}</div>
+        <div class="kpi-sub">Currently operational</div>
+        <div class="kpi-ico">🚆</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Registered Passengers</div>
+        <div class="kpi-val">{{ stats.total_passengers }}</div>
+        <div class="kpi-sub">↑ Total accounts</div>
+        <div class="kpi-ico">👥</div>
+      </div>
+    </div>
+
+    <!-- ── CHARTS + TRAIN STATUS ── -->
+    <div class="admin-grid" id="dashboard">
+      <div class="a-panel">
+        <div class="a-panel-head">
+          <h3>Weekly Revenue (₹)</h3>
+          <span style="font-family:var(--font-m);font-size:0.7rem;color:var(--gold);">LAST 7 DAYS</span>
+        </div>
+        <div class="a-panel-body">
+          <div class="chart-bars">
+            <div class="bar" style="height:55%"><div class="bar-lbl">Mon</div></div>
+            <div class="bar" style="height:78%"><div class="bar-lbl">Tue</div></div>
+            <div class="bar" style="height:42%"><div class="bar-lbl">Wed</div></div>
+            <div class="bar" style="height:92%"><div class="bar-lbl">Thu</div></div>
+            <div class="bar" style="height:68%"><div class="bar-lbl">Fri</div></div>
+            <div class="bar" style="height:100%"><div class="bar-lbl">Sat</div></div>
+            <div class="bar" style="height:50%"><div class="bar-lbl">Sun</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="a-panel" id="trains">
+        <div class="a-panel-head">
+          <h3>Train Status</h3>
+          <span style="font-family:var(--font-m);font-size:0.7rem;color:var(--gold);">LIVE</span>
+        </div>
+        <div class="a-panel-body">
+          <table class="data-table">
+            <thead><tr><th>Number</th><th>Name</th><th>Type</th><th>Status</th></tr></thead>
+            <tbody>
+            {% for t in trains %}
+            <tr>
+              <td style="font-family:var(--font-m);">{{ t.train_number }}</td>
+              <td>{{ t.train_name }}</td>
+              <td><span class="badge badge-{{ t.train_type|lower }}">{{ t.train_type }}</span></td>
+              <td>
+                {% if t.status == 'Active' %}
+                  <span class="badge badge-active">Active</span>
+                {% elif t.status == 'Under Maintenance' %}
+                  <span class="badge badge-waiting">Maintenance</span>
+                {% else %}
+                  <span class="badge badge-inactive">Inactive</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RECENT BOOKINGS ── -->
+    <div class="a-panel" id="bookings" style="margin-bottom:24px;">
+      <div class="a-panel-head">
+        <h3>Recent Bookings</h3>
+        <span style="font-family:var(--font-m);font-size:0.7rem;color:var(--gold);">LATEST 10</span>
+      </div>
+      <div class="a-panel-body">
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>PNR</th><th>Passenger</th><th>Train</th>
+                <th>Route</th><th>Date</th><th>Coach</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for b in recent_bookings %}
+            <tr>
+              <td>
+                <a href="{{ url_for('pnr_status', pnr=b.pnr_number) }}"
+                   style="font-family:var(--font-m);color:var(--gold);text-decoration:none;">
+                  {{ b.pnr_number }}
+                </a>
+              </td>
+              <td>{{ b.passenger }}</td>
+              <td>{{ b.train_number }}</td>
+              <td>{{ b.from_code }} → {{ b.to_code }}</td>
+              <td style="font-size:0.82rem;">{{ b.journey_date }}</td>
+              <td>{{ b.coach_type }}/{{ b.seat_number }}</td>
+              <td>
+                {% set sc = 'badge-confirmed' if b.booking_status=='Confirmed' else ('badge-waiting' if b.booking_status=='Waiting' else 'badge-cancelled') %}
+                <span class="badge {{ sc }}">{{ b.booking_status }}</span>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" style="text-align:center;color:var(--gray);">No bookings yet</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── EMPLOYEES ── -->
+    <div class="a-panel" id="employees">
+      <div class="a-panel-head">
+        <h3>Employees</h3>
+        <span style="font-family:var(--font-m);font-size:0.7rem;color:var(--gold);">{{ employees|length }} STAFF</span>
+      </div>
+      <div class="a-panel-body">
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>Name</th><th>Designation</th><th>Assigned To</th><th>Phone</th><th>Salary</th></tr>
+            </thead>
+            <tbody>
+            {% for e in employees %}
+            <tr>
+              <td>{{ e.first_name }} {{ e.last_name }}</td>
+              <td>{{ e.designation }}</td>
+              <td>{{ e.train_name or e.station_name or '—' }}</td>
+              <td>{{ e.phone }}</td>
+              <td>₹{{ '{:,.0f}'.format(e.salary) if e.salary else '—' }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" style="text-align:center;color:var(--gray);">No employees found</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+{% endblock %}

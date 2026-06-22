@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+<!-- ── LIVE TRAIN TICKER ── -->
+<div class="ticker" style="margin-top:68px;">
+  <div class="ticker-track">
+    <div class="ticker-item">🚆 12301 HOWRAH RAJDHANI <span>ON TIME</span></div>
+    <div class="ticker-item">🚄 12951 MUMBAI RAJDHANI <span>ON TIME</span></div>
+    <div class="ticker-item">🚂 12621 TAMIL NADU EXPRESS <span>DELAYED 15 MIN</span></div>
+    <div class="ticker-item">🚆 12002 SHATABDI EXPRESS <span>ON TIME</span></div>
+    <div class="ticker-item">🚄 12431 NZM RAJDHANI <span>ON TIME</span></div>
+    <!-- Duplicate for seamless loop -->
+    <div class="ticker-item">🚆 12301 HOWRAH RAJDHANI <span>ON TIME</span></div>
+    <div class="ticker-item">🚄 12951 MUMBAI RAJDHANI <span>ON TIME</span></div>
+    <div class="ticker-item">🚂 12621 TAMIL NADU EXPRESS <span>DELAYED 15 MIN</span></div>
+    <div class="ticker-item">🚆 12002 SHATABDI EXPRESS <span>ON TIME</span></div>
+    <div class="ticker-item">🚄 12431 NZM RAJDHANI <span>ON TIME</span></div>
+  </div>
+</div>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-track"></div>
+
+  <div class="hero-inner">
+    <!-- Left -->
+    <div>
+      <div class="hero-eyebrow">India's Railway Network</div>
+      <h1 class="hero-title">
+        Journey<br>
+        <span class="gold">Beyond</span><br>
+        <span class="stroke">Horizons</span>
+      </h1>
+      <p class="hero-sub">
+        Book trains across India in seconds. Track your PNR, manage bookings,
+        and travel with confidence on every journey.
+      </p>
+      <div class="hero-btns">
+        <a href="{{ url_for('search') }}" class="btn btn-gold">Search Trains</a>
+        <a href="{{ url_for('pnr') }}"    class="btn btn-outline">Check PNR</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><div class="stat-num">7,000+</div><div class="stat-lbl">Trains Daily</div></div>
+        <div class="stat"><div class="stat-num">8,000+</div><div class="stat-lbl">Stations</div></div>
+        <div class="stat"><div class="stat-num">23M+</div><div class="stat-lbl">Passengers/Day</div></div>
+      </div>
+    </div>
+
+    <!-- Right: Quick Search -->
+    <div class="qsearch">
+      <form action="{{ url_for('search') }}" method="POST">
+        <div class="form-group">
+          <label>From Station</label>
+          <select name="from_station">
+            <option value="NDLS">New Delhi (NDLS)</option>
+            <option value="BCT">Mumbai Central (BCT)</option>
+            <option value="MAS">Chennai Central (MAS)</option>
+            <option value="HWH">Howrah Junction (HWH)</option>
+            <option value="SBC">Bengaluru City (SBC)</option>
+            <option value="HYB">Hyderabad (HYB)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>To Station</label>
+          <select name="to_station">
+            <option value="HWH">Howrah Junction (HWH)</option>
+            <option value="BCT">Mumbai Central (BCT)</option>
+            <option value="MAS">Chennai Central (MAS)</option>
+            <option value="NDLS">New Delhi (NDLS)</option>
+            <option value="SBC">Bengaluru City (SBC)</option>
+            <option value="HYB">Hyderabad (HYB)</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Journey Date</label>
+            <input type="date" name="journey_date">
+          </div>
+          <div class="form-group">
+            <label>Class</label>
+            <select name="train_class">
+              <option>All Classes</option>
+              <option>Sleeper (SL)</option>
+              <option>AC 3 Tier (3A)</option>
+              <option>AC 2 Tier (2A)</option>
+              <option>AC 1st (1A)</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-gold btn-full">🔍 Search Trains</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ── -->
+<section class="section-wrap">
+  <span class="section-tag">Why RailYatra</span>
+  <h2 class="section-title">Everything You<br>Need to Travel</h2>
+  <div class="gold-line"></div>
+  <div class="features-grid">
+    <div class="feat-card">
+      <span class="feat-icon">⚡</span>
+      <div class="feat-title">Instant Booking</div>
+      <p class="feat-desc">Book your tickets in under 60 seconds. Real-time seat availability across all train classes and routes.</p>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">📍</span>
+      <div class="feat-title">Live Train Tracking</div>
+      <p class="feat-desc">Track any train in real-time. Know exactly where your train is and get delay alerts instantly.</p>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">🔒</span>
+      <div class="feat-title">Secure Payments</div>
+      <p class="feat-desc">Pay via UPI, Credit Card, Net Banking or Debit Card. 100% secure transactions with instant confirmation.</p>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">📱</span>
+      <div class="feat-title">Digital Tickets</div>
+      <p class="feat-desc">Get your e-ticket on your phone. No printing needed — just show your PNR and ID at the station.</p>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">↩️</span>
+      <div class="feat-title">Easy Cancellation</div>
+      <p class="feat-desc">Cancel bookings online anytime and get automatic refunds as per Railway cancellation policy.</p>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">🕐</span>
+      <div class="feat-title">24/7 Support</div>
+      <p class="feat-desc">Round-the-clock customer support to help you with bookings, cancellations, and travel queries.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── ACTIVE TRAINS ── -->
+{% if trains %}
+<section style="background:var(--dark2);border-top:1px solid var(--dark3);border-bottom:1px solid var(--dark3);">
+  <div class="section-wrap" style="padding-top:60px;padding-bottom:60px;">
+    <span class="section-tag">From Our Database</span>
+    <h2 class="section-title">Active Trains</h2>
+    <div class="gold-line"></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;">
+      {% for t in trains %}
+      <div class="card" style="padding:22px;">
+        <div style="font-family:var(--font-m);font-size:0.9rem;color:var(--gold);margin-bottom:6px;">{{ t.train_number }}</div>
+        <div style="font-family:var(--font-d);font-size:1rem;margin-bottom:10px;">{{ t.train_name }}</div>
+        <span class="badge badge-{{ t.train_type|lower }}">{{ t.train_type }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}
